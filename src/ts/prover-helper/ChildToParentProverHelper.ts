@@ -55,18 +55,13 @@ export class ChildToParentProverHelper
     )
 
     const rlpBlockHeader = await this._getRlpBlockHeader('home', homeBlockHash)
-    const { rlpAccountProof, rlpStorageProof, slotValue } =
+    const { rlpAccountProof, rlpStorageProof } =
       await this._getRlpStorageAndAccountProof(
         'home',
         homeBlockHash,
         this.bufferAddress,
         slot
       )
-
-    console.log('slotValue', slotValue)
-    console.log('targetBlockHash', targetBlockHash)
-
-    /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
 
     const input = encodeAbiParameters(
       [

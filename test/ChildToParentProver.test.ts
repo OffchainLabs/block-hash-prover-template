@@ -12,7 +12,7 @@ import { getEnv } from '../src/ts/util'
 import { ChildToParentProverHelper } from '../src/ts/prover-helper/ChildToParentProverHelper'
 import { ChildToParentProver$Type } from '../artifacts/src/contracts/ChildToParentProver.sol/ChildToParentProver'
 import { basicProverTests } from './basicProverTests'
-import { patchHardhatClient } from './PatchedHardhatClient'
+import { patchHardhatClient } from './patchHardhatClient'
 
 // replace this with the block number of the home chain fork test block
 const FORK_TEST_BLOCK = 153606310n

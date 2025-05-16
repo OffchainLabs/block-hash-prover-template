@@ -11,18 +11,18 @@ contract ChildToParentProver is BaseProver, IBlockHashProver {
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
     /// @param  homeBlockHash The block hash of the home chain.
-    /// @param  input ABI encoded (bytes blockHeader, uint256 blockNumber, bytes accountProof, bytes storageProof)
+    /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
     function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
         external
         pure
         returns (bytes32 targetBlockHash)
     {
         // decode the input
-        (bytes memory rlpBlockHeader, uint256 blockNumber, bytes memory accountProof, bytes memory storageProof) =
+        (bytes memory rlpBlockHeader, uint256 targetBlockNumber, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
         // calculate the slot based on the provided block number
-        uint256 slot = uint256(keccak256(abi.encode(blockNumber, blockHashMappingSlot)));
+        uint256 slot = uint256(keccak256(abi.encode(targetBlockNumber, blockHashMappingSlot)));
 
         // verify proofs and get the block hash
         targetBlockHash =
@@ -30,13 +30,13 @@ contract ChildToParentProver is BaseProver, IBlockHashProver {
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
-    /// @param  input ABI encoded (uint256 parentChainBlockNumber)
+    /// @param  input ABI encoded (uint256 targetBlockNumber)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         // decode the input
-        uint256 parentChainBlockNumber = abi.decode(input, (uint256));
+        uint256 targetBlockNumber = abi.decode(input, (uint256));
 
         // get the block hash from the buffer
-        targetBlockHash = IBuffer(blockHashBuffer).parentChainBlockHash(parentChainBlockNumber);
+        targetBlockHash = IBuffer(blockHashBuffer).parentChainBlockHash(targetBlockNumber);
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
