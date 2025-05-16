@@ -33,9 +33,17 @@ export class ParentToChildProverHelper
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }> {
-    const rlpBlockHeader = await this._getRlpBlockHeader(targetBlockHash)
+    const rlpBlockHeader = await this._getRlpBlockHeader(
+      'target',
+      targetBlockHash
+    )
     const { rlpAccountProof, rlpStorageProof, slotValue } =
-      await this._getRlpStorageAndAccountProof(targetBlockHash, account, slot)
+      await this._getRlpStorageAndAccountProof(
+        'target',
+        targetBlockHash,
+        account,
+        slot
+      )
 
     const input = encodeAbiParameters(
       [
