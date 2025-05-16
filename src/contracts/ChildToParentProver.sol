@@ -25,7 +25,8 @@ contract ChildToParentProver is BaseProver, IBlockHashProver {
         uint256 slot = uint256(keccak256(abi.encode(blockNumber, blockHashMappingSlot)));
 
         // verify proofs and get the block hash
-        targetBlockHash = _getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof);
+        targetBlockHash =
+            _getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof);
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.

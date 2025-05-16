@@ -41,7 +41,9 @@ export function basicProverTests(
 
     it('verifyTargetBlockHash should return the correct block hash', async () => {
       const homeBlockHash = (
-        await (await hre.viem.getPublicClient()).getBlock({blockNumber: ctx.forkBlockNumber})
+        await (
+          await hre.viem.getPublicClient()
+        ).getBlock({ blockNumber: ctx.forkBlockNumber })
       ).hash
       const { input, targetBlockHash } =
         await ctx.proverHelper.buildInputForVerifyTargetBlockHash(homeBlockHash)

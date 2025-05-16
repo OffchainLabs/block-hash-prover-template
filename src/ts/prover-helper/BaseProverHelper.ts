@@ -7,8 +7,12 @@ export class BaseProverHelper {
     readonly targetChainClient: PublicClient
   ) {}
 
-  protected async _getRlpBlockHeader(chain: 'target' | 'home', blockHash: Hash): Promise<Hex> {
-    const client = chain === 'target' ? this.targetChainClient : this.homeChainClient
+  protected async _getRlpBlockHeader(
+    chain: 'target' | 'home',
+    blockHash: Hash
+  ): Promise<Hex> {
+    const client =
+      chain === 'target' ? this.targetChainClient : this.homeChainClient
     const block: any = await client.transport.request({
       method: 'eth_getBlockByHash',
       params: [blockHash, false],
@@ -27,7 +31,8 @@ export class BaseProverHelper {
     account: Address,
     slot: bigint
   ): Promise<{ rlpAccountProof: Hex; rlpStorageProof: Hex; slotValue: Hash }> {
-    const client = chain === 'target' ? this.targetChainClient : this.homeChainClient
+    const client =
+      chain === 'target' ? this.targetChainClient : this.homeChainClient
     const block = await client.getBlock({
       blockHash,
       includeTransactions: false,

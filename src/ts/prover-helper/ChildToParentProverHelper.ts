@@ -26,7 +26,10 @@ export class ChildToParentProverHelper
     input: Hex
     targetBlockHash: Hash
   }> {
-    const { targetBlockHash, targetBlockNumber } = await this._findLatestAvailableTargetChainBlock(await this.homeChainClient.getBlockNumber())
+    const { targetBlockHash, targetBlockNumber } =
+      await this._findLatestAvailableTargetChainBlock(
+        await this.homeChainClient.getBlockNumber()
+      )
     return {
       input: encodeAbiParameters([{ type: 'uint256' }], [targetBlockNumber]),
       targetBlockHash,
@@ -36,18 +39,32 @@ export class ChildToParentProverHelper
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
-    const homeBlockNumber = (await this.homeChainClient.getBlock({blockHash: homeBlockHash})).number
-    const { targetBlockHash, targetBlockNumber } = await this._findLatestAvailableTargetChainBlock(homeBlockNumber)
+    const homeBlockNumber = (
+      await this.homeChainClient.getBlock({ blockHash: homeBlockHash })
+    ).number
+    const { targetBlockHash, targetBlockNumber } =
+      await this._findLatestAvailableTargetChainBlock(homeBlockNumber)
 
-    const slot = hexToBigInt(keccak256(encodeAbiParameters([{type: 'uint256'}, {type: 'uint256'}], [targetBlockNumber, this.blockHashMappingSlot])))
+    const slot = hexToBigInt(
+      keccak256(
+        encodeAbiParameters(
+          [{ type: 'uint256' }, { type: 'uint256' }],
+          [targetBlockNumber, this.blockHashMappingSlot]
+        )
+      )
+    )
 
     const rlpBlockHeader = await this._getRlpBlockHeader('home', homeBlockHash)
     const { rlpAccountProof, rlpStorageProof, slotValue } =
-      await this._getRlpStorageAndAccountProof('home', homeBlockHash, this.bufferAddress, slot)
+      await this._getRlpStorageAndAccountProof(
+        'home',
+        homeBlockHash,
+        this.bufferAddress,
+        slot
+      )
 
     console.log('slotValue', slotValue)
     console.log('targetBlockHash', targetBlockHash)
-
 
     /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
 
@@ -72,9 +89,17 @@ export class ChildToParentProverHelper
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }> {
-    const rlpBlockHeader = await this._getRlpBlockHeader('target', targetBlockHash)
+    const rlpBlockHeader = await this._getRlpBlockHeader(
+      'target',
+      targetBlockHash
+    )
     const { rlpAccountProof, rlpStorageProof, slotValue } =
-      await this._getRlpStorageAndAccountProof('target', targetBlockHash, account, slot)
+      await this._getRlpStorageAndAccountProof(
+        'target',
+        targetBlockHash,
+        account,
+        slot
+      )
 
     const input = encodeAbiParameters(
       [
@@ -95,8 +120,13 @@ export class ChildToParentProverHelper
     targetBlockHash: Hash
   }> {
     const bufferContract = this._bufferContract()
-    const targetBlockNumber = await bufferContract.read.newestBlockNumber({blockNumber: homeBlockNumber})
-    const targetBlockHash = await bufferContract.read.parentChainBlockHash([targetBlockNumber], {blockNumber: homeBlockNumber})
+    const targetBlockNumber = await bufferContract.read.newestBlockNumber({
+      blockNumber: homeBlockNumber,
+    })
+    const targetBlockHash = await bufferContract.read.parentChainBlockHash(
+      [targetBlockNumber],
+      { blockNumber: homeBlockNumber }
+    )
 
     return {
       targetBlockNumber,
