@@ -3,20 +3,39 @@ pragma solidity ^0.8.28;
 
 import {BaseProver} from "./BaseProver.sol";
 import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
+import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 
 contract ChildToParentProver is BaseProver, IBlockHashProver {
-    /// @inheritdoc IBlockHashProver
+    address public constant blockHashBuffer = 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071;
+    uint256 public constant blockHashMappingSlot = 51;
+
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
+    /// @param  homeBlockHash The block hash of the home chain.
+    /// @param  input ABI encoded (bytes blockHeader, uint256 blockNumber, bytes accountProof, bytes storageProof)
     function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
         external
-        view
+        pure
         returns (bytes32 targetBlockHash)
     {
-        return 0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d;
+        // decode the input
+        (bytes memory rlpBlockHeader, uint256 blockNumber, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (bytes, uint256, bytes, bytes));
+
+        // calculate the slot based on the provided block number
+        uint256 slot = uint256(keccak256(abi.encode(blockNumber, blockHashMappingSlot)));
+
+        // verify proofs and get the block hash
+        targetBlockHash = _getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof);
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
+    /// @param  input ABI encoded (uint256 parentChainBlockNumber)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
-        return 0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d;
+        // decode the input
+        uint256 parentChainBlockNumber = abi.decode(input, (uint256));
+
+        // get the block hash from the buffer
+        targetBlockHash = IBuffer(blockHashBuffer).parentChainBlockHash(parentChainBlockNumber);
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

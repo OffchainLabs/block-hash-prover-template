@@ -14,20 +14,20 @@ import { ParentToChildProver$Type } from '../artifacts/src/contracts/ParentToChi
 import { basicProverTests } from './basicProverTests'
 
 // replace this with the block number of the home chain fork test block
-const FORK_TEST_BLOCK=0x1568a70
+const FORK_TEST_BLOCK = 8340534
 
 // replace this with the most recent target block hash available in the target chain's state
 // this is used to test the prover's ability to prove a block
 const MOST_RECENT_TARGET_CHAIN_BLOCK_HASH: Hash =
-  '0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580'
+  '0x9aa793347b6915ff7869da6d155e9d3d7365ee5f3d34671f71bee6491730bec9'
 
 // replace this with a known storage slot value at the specified target chain block hash
 // for example a token account balance
 const KNOWN_STORAGE_SLOT_ACCOUNT: Address =
-  '0xC6962004f452bE9203591991D15f6b388e09E8D0'
-const KNOWN_STORAGE_SLOT: bigint = 0n
+  '0x38f918D0E9F1b721EDaA41302E399fa1B79333a9' // Arbitrum sepolia bridge
+const KNOWN_STORAGE_SLOT: bigint = 10n // sequencerReportedSubMessageCount
 const KNOWN_STORAGE_SLOT_VALUE: Hash =
-  '0x0001002328232812fefcf792000000000000000000032a96d8f8d5f811f7608f'
+  '0x000000000000000000000000000000000000000000000000000000000927de3b'
 
 describe('ParentToChildProver', function () {
   let prover: GetContractReturnType<

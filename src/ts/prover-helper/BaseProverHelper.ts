@@ -7,10 +7,11 @@ export class BaseProverHelper {
     readonly targetChainClient: PublicClient
   ) {}
 
-  protected async _getRlpBlockHeader(targetBlockHash: Hash): Promise<Hex> {
-    const block: any = await this.targetChainClient.transport.request({
+  protected async _getRlpBlockHeader(chain: 'target' | 'home', blockHash: Hash): Promise<Hex> {
+    const client = chain === 'target' ? this.targetChainClient : this.homeChainClient
+    const block: any = await client.transport.request({
       method: 'eth_getBlockByHash',
-      params: [targetBlockHash, false],
+      params: [blockHash, false],
     })
 
     if (!block) {
@@ -21,20 +22,22 @@ export class BaseProverHelper {
   }
 
   protected async _getRlpStorageAndAccountProof(
-    targetBlockHash: Hash,
+    chain: 'target' | 'home',
+    blockHash: Hash,
     account: Address,
     slot: bigint
   ): Promise<{ rlpAccountProof: Hex; rlpStorageProof: Hex; slotValue: Hash }> {
-    const block: any = await this.targetChainClient.transport.request({
-      method: 'eth_getBlockByHash',
-      params: [targetBlockHash, true],
+    const client = chain === 'target' ? this.targetChainClient : this.homeChainClient
+    const block = await client.getBlock({
+      blockHash,
+      includeTransactions: false,
     })
 
     if (!block) {
       throw new Error('Block not found')
     }
 
-    const proof = await this.targetChainClient.getProof({
+    const proof = await client.getProof({
       address: account,
       storageKeys: [toHex(slot, { size: 32 })],
       blockNumber: block.number,

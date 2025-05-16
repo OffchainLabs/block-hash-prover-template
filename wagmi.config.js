@@ -7,5 +7,5 @@ export default defineConfig({
       project: '.',
     }),
   ],
-  out: 'wagmi/abi.ts'
+  out: 'wagmi/abi.ts',
 })

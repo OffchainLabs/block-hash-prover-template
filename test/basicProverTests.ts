@@ -6,6 +6,7 @@ import { expect } from 'chai'
 
 export function basicProverTests(
   getContext: () => {
+    forkBlockNumber: bigint
     proverAddress: Address
     proverHelper: IProverHelper
     expectedTargetBlockHash: Hash
@@ -40,7 +41,7 @@ export function basicProverTests(
 
     it('verifyTargetBlockHash should return the correct block hash', async () => {
       const homeBlockHash = (
-        await (await hre.viem.getPublicClient()).getBlock()
+        await (await hre.viem.getPublicClient()).getBlock({blockNumber: ctx.forkBlockNumber})
       ).hash
       const { input, targetBlockHash } =
         await ctx.proverHelper.buildInputForVerifyTargetBlockHash(homeBlockHash)
