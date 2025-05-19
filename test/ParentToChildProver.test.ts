@@ -51,7 +51,10 @@ describe('ParentToChildProver', function () {
       transport: http(getEnv('CHILD_RPC_URL')),
     })
 
-    prover = await hre.viem.deployContract('ParentToChildProver', [OUTBOX, ROOTS_SLOT])
+    prover = await hre.viem.deployContract('ParentToChildProver', [
+      OUTBOX,
+      ROOTS_SLOT,
+    ])
 
     helper = new ParentToChildProverHelper(
       prover.address,

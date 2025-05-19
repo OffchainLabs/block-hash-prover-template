@@ -1,7 +1,21 @@
-import { Address, encodeAbiParameters, getContract, GetContractReturnType, Hash, Hex, hexToBigInt, keccak256, PublicClient } from 'viem'
+import {
+  Address,
+  encodeAbiParameters,
+  getContract,
+  GetContractReturnType,
+  Hash,
+  Hex,
+  hexToBigInt,
+  keccak256,
+  PublicClient,
+} from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
-import { iOutboxAbi, parentToChildProverAbi, iRollupCoreAbi } from '../../../wagmi/abi'
+import {
+  iOutboxAbi,
+  parentToChildProverAbi,
+  iRollupCoreAbi,
+} from '../../../wagmi/abi'
 
 export class ParentToChildProverHelper
   extends BaseProverHelper
@@ -12,9 +26,10 @@ export class ParentToChildProverHelper
     input: Hex
     targetBlockHash: Hash
   }> {
-    const { targetBlockHash, sendRoot } = await this._findLatestAvailableTargetChainBlock(
-      await this.homeChainClient.getBlockNumber()
-    )
+    const { targetBlockHash, sendRoot } =
+      await this._findLatestAvailableTargetChainBlock(
+        await this.homeChainClient.getBlockNumber()
+      )
     return {
       input: encodeAbiParameters([{ type: 'bytes32' }], [sendRoot]),
       targetBlockHash,
@@ -24,9 +39,11 @@ export class ParentToChildProverHelper
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
-    const { targetBlockHash, sendRoot } = await this._findLatestAvailableTargetChainBlock(
-      (await this.homeChainClient.getBlock({ blockHash: homeBlockHash })).number
-    )
+    const { targetBlockHash, sendRoot } =
+      await this._findLatestAvailableTargetChainBlock(
+        (await this.homeChainClient.getBlock({ blockHash: homeBlockHash }))
+          .number
+      )
 
     const slot = hexToBigInt(
       keccak256(
@@ -46,19 +63,19 @@ export class ParentToChildProverHelper
         slot
       )
 
-      const input = encodeAbiParameters(
-        [
-          { type: 'bytes' }, // block header
-          { type: 'bytes32' }, // send root
-          { type: 'bytes' }, // account proof
-          { type: 'bytes' }, // storage proof
-        ],
-        [rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof]
-      )
-    
+    const input = encodeAbiParameters(
+      [
+        { type: 'bytes' }, // block header
+        { type: 'bytes32' }, // send root
+        { type: 'bytes' }, // account proof
+        { type: 'bytes' }, // storage proof
+      ],
+      [rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof]
+    )
+
     return {
       input,
-      targetBlockHash
+      targetBlockHash,
     }
   }
 
@@ -99,15 +116,21 @@ export class ParentToChildProverHelper
   }> {
     // grab latest confirmed assertion hash from rollup contract
     const rollupContract = await this._rollupContract()
-    const latestConfirmedAssertionHash = await rollupContract.read.latestConfirmed()
+    const latestConfirmedAssertionHash =
+      await rollupContract.read.latestConfirmed()
 
     // search for AssertionConfirmed event for that assertion
-    const latestConfirmedAssertionEvent = (await rollupContract.getEvents.AssertionConfirmed({
-      assertionHash: latestConfirmedAssertionHash,
-    }, {
-      fromBlock: 1n,
-      toBlock: homeBlockNumber
-    }))[0]
+    const latestConfirmedAssertionEvent = (
+      await rollupContract.getEvents.AssertionConfirmed(
+        {
+          assertionHash: latestConfirmedAssertionHash,
+        },
+        {
+          fromBlock: 1n,
+          toBlock: homeBlockNumber,
+        }
+      )
+    )[0]
 
     if (!latestConfirmedAssertionEvent) {
       throw new Error('No assertion confirmed event found')
@@ -119,7 +142,10 @@ export class ParentToChildProverHelper
     }
   }
 
-  _proverContract(): GetContractReturnType<typeof parentToChildProverAbi, PublicClient> {
+  _proverContract(): GetContractReturnType<
+    typeof parentToChildProverAbi,
+    PublicClient
+  > {
     return getContract({
       address: this.proverAddress,
       abi: parentToChildProverAbi,
@@ -127,7 +153,9 @@ export class ParentToChildProverHelper
     })
   }
 
-  async _outboxContract(): Promise<GetContractReturnType<typeof iOutboxAbi, PublicClient>> {
+  async _outboxContract(): Promise<
+    GetContractReturnType<typeof iOutboxAbi, PublicClient>
+  > {
     return getContract({
       address: await this._proverContract().read.outbox(),
       abi: iOutboxAbi,
@@ -135,7 +163,9 @@ export class ParentToChildProverHelper
     })
   }
 
-  async _rollupContract(): Promise<GetContractReturnType<typeof iRollupCoreAbi, PublicClient>> {
+  async _rollupContract(): Promise<
+    GetContractReturnType<typeof iRollupCoreAbi, PublicClient>
+  > {
     return getContract({
       address: await (await this._outboxContract()).read.rollup(),
       abi: iRollupCoreAbi,
