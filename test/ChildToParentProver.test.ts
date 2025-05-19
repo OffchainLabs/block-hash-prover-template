@@ -15,7 +15,7 @@ import { basicProverTests } from './basicProverTests'
 import { patchHardhatClient } from './patchHardhatClient'
 
 // replace this with the block number of the home chain fork test block
-const FORK_TEST_BLOCK = 153606310n
+const FORK_TEST_BLOCK = 154627620n
 
 // replace this with the most recent target block hash available in the target chain's state
 // this is used to test the prover's ability to prove a block

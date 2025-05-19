@@ -11,12 +11,12 @@ contract ParentToChildProver is BaseProver, IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        return 0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580;
+        return 0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde;
     }
 
     /// @inheritdoc IBlockHashProver
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
-        return 0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580;
+        return 0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde;
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

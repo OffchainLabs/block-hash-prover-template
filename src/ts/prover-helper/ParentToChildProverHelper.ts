@@ -14,7 +14,7 @@ export class ParentToChildProverHelper
     return {
       input: '0x',
       targetBlockHash:
-        '0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580',
+        '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde',
     }
   }
 
@@ -24,7 +24,7 @@ export class ParentToChildProverHelper
     return {
       input: '0x',
       targetBlockHash:
-        '0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580',
+        '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde',
     }
   }
 

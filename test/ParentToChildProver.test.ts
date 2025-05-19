@@ -15,20 +15,20 @@ import { basicProverTests } from './basicProverTests'
 import { patchHardhatClient } from './patchHardhatClient'
 
 // replace this with the block number of the home chain fork test block
-const FORK_TEST_BLOCK = 8340534n
+const FORK_TEST_BLOCK = 8361791n
 
 // replace this with the most recent target block hash available in the target chain's state
 // this is used to test the prover's ability to prove a block
 const MOST_RECENT_TARGET_CHAIN_BLOCK_HASH: Hash =
-  '0x9aa793347b6915ff7869da6d155e9d3d7365ee5f3d34671f71bee6491730bec9'
+  '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde'
 
 // replace this with a known storage slot value at the specified target chain block hash
 // for example a token account balance
 const KNOWN_STORAGE_SLOT_ACCOUNT: Address =
-  '0x38f918D0E9F1b721EDaA41302E399fa1B79333a9' // Arbitrum sepolia bridge
-const KNOWN_STORAGE_SLOT: bigint = 10n // sequencerReportedSubMessageCount
+  '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071' // Block hash buffer
+const KNOWN_STORAGE_SLOT: bigint = 50n // newestBlockNumber
 const KNOWN_STORAGE_SLOT_VALUE: Hash =
-  '0x000000000000000000000000000000000000000000000000000000000927de3b'
+  '0x000000000000000000000000000000000000000000000000000000007f43ba00'
 
 describe('ParentToChildProver', function () {
   let prover: GetContractReturnType<
