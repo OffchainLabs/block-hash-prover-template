@@ -12,9 +12,10 @@ import { getEnv } from '../src/ts/util'
 import { ParentToChildProverHelper } from '../src/ts/prover-helper/ParentToChildProverHelper'
 import { ParentToChildProver$Type } from '../artifacts/src/contracts/ParentToChildProver.sol/ParentToChildProver'
 import { basicProverTests } from './basicProverTests'
+import { patchHardhatClient } from './patchHardhatClient'
 
 // replace this with the block number of the home chain fork test block
-const FORK_TEST_BLOCK = 8340534
+const FORK_TEST_BLOCK = 8340534n
 
 // replace this with the most recent target block hash available in the target chain's state
 // this is used to test the prover's ability to prove a block
@@ -40,6 +41,8 @@ describe('ParentToChildProver', function () {
   beforeEach(async () => {
     await reset(getEnv('PARENT_RPC_URL'), FORK_TEST_BLOCK)
 
+    const homeClient = await hre.viem.getPublicClient()
+    patchHardhatClient(homeClient, getEnv('PARENT_RPC_URL'), FORK_TEST_BLOCK)
     targetClient = createPublicClient({
       transport: http(getEnv('CHILD_RPC_URL')),
     })
@@ -48,13 +51,14 @@ describe('ParentToChildProver', function () {
 
     helper = new ParentToChildProverHelper(
       prover.address,
-      await hre.viem.getPublicClient(),
+      homeClient,
       targetClient
     )
   })
 
   basicProverTests(() => {
     return {
+      forkBlockNumber: FORK_TEST_BLOCK,
       proverAddress: prover.address,
       proverHelper: helper,
       expectedTargetBlockHash: MOST_RECENT_TARGET_CHAIN_BLOCK_HASH,
