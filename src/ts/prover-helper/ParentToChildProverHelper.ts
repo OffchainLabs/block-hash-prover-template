@@ -1,6 +1,7 @@
-import { Address, encodeAbiParameters, Hash, Hex } from 'viem'
+import { Address, encodeAbiParameters, getContract, GetContractReturnType, Hash, Hex, PublicClient } from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
+import { iOutboxAbi, parentToChildProverAbi, iRollupCoreAbi } from '../../../wagmi/abi'
 
 export class ParentToChildProverHelper
   extends BaseProverHelper
@@ -11,10 +12,12 @@ export class ParentToChildProverHelper
     input: Hex
     targetBlockHash: Hash
   }> {
+    const { targetBlockHash, sendRoot } = await this._findLatestAvailableTargetChainBlock(
+      await this.homeChainClient.getBlockNumber()
+    )
     return {
-      input: '0x',
-      targetBlockHash:
-        '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde',
+      input: encodeAbiParameters([{ type: 'bytes32' }], [sendRoot]),
+      targetBlockHash,
     }
   }
 
@@ -57,5 +60,55 @@ export class ParentToChildProverHelper
     )
 
     return { input, slotValue }
+  }
+
+  async _findLatestAvailableTargetChainBlock(homeBlockNumber: bigint): Promise<{
+    sendRoot: Hash
+    targetBlockHash: Hash
+  }> {
+    // grab latest confirmed assertion hash from rollup contract
+    const rollupContract = await this._rollupContract()
+    const latestConfirmedAssertionHash = await rollupContract.read.latestConfirmed()
+
+    // search for AssertionConfirmed event for that assertion
+    const latestConfirmedAssertionEvent = (await rollupContract.getEvents.AssertionConfirmed({
+      assertionHash: latestConfirmedAssertionHash,
+    }, {
+      fromBlock: 1n,
+      toBlock: homeBlockNumber
+    }))[0]
+
+    if (!latestConfirmedAssertionEvent) {
+      throw new Error('No assertion confirmed event found')
+    }
+
+    return {
+      sendRoot: latestConfirmedAssertionEvent.args.sendRoot!,
+      targetBlockHash: latestConfirmedAssertionEvent.args.blockHash!,
+    }
+  }
+
+  _proverContract(): GetContractReturnType<typeof parentToChildProverAbi, PublicClient> {
+    return getContract({
+      address: this.proverAddress,
+      abi: parentToChildProverAbi,
+      client: this.homeChainClient,
+    })
+  }
+
+  async _outboxContract(): Promise<GetContractReturnType<typeof iOutboxAbi, PublicClient>> {
+    return getContract({
+      address: await this._proverContract().read.outbox(),
+      abi: iOutboxAbi,
+      client: this.homeChainClient,
+    })
+  }
+
+  async _rollupContract(): Promise<GetContractReturnType<typeof iRollupCoreAbi, PublicClient>> {
+    return getContract({
+      address: await (await this._outboxContract()).read.rollup(),
+      abi: iRollupCoreAbi,
+      client: this.homeChainClient,
+    })
   }
 }

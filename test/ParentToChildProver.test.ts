@@ -30,6 +30,10 @@ const KNOWN_STORAGE_SLOT: bigint = 50n // newestBlockNumber
 const KNOWN_STORAGE_SLOT_VALUE: Hash =
   '0x000000000000000000000000000000000000000000000000000000007f43ba00'
 
+// constructor arguments for the Arbitrum Sepolia prover
+const OUTBOX = '0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F'
+const ROOTS_SLOT = 3n
+
 describe('ParentToChildProver', function () {
   let prover: GetContractReturnType<
     ParentToChildProver$Type['abi'],
@@ -47,7 +51,7 @@ describe('ParentToChildProver', function () {
       transport: http(getEnv('CHILD_RPC_URL')),
     })
 
-    prover = await hre.viem.deployContract('ParentToChildProver')
+    prover = await hre.viem.deployContract('ParentToChildProver', [OUTBOX, ROOTS_SLOT])
 
     helper = new ParentToChildProverHelper(
       prover.address,

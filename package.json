@@ -16,12 +16,13 @@
   "scripts": {
     "build": "hardhat compile && wagmi generate && tsc",
     "clean": "hardhat clean && rm -rf wagmi && rm -rf dist",
-    "test": "hardhat test"
+    "test": "yarn build && hardhat test"
   },
   "repository": "https://github.com/OffchainLabs/block-hash-prover-template/",
   "author": "Henry <11198460+godzillaba@users.noreply.github.com>",
   "license": "MIT",
   "devDependencies": {
+    "@arbitrum/nitro-contracts": "^3.1.0",
     "@eth-optimism/contracts": "^0.6.0",
     "@nomicfoundation/hardhat-ignition": "^0.15.0",
     "@nomicfoundation/hardhat-ignition-viem": "^0.15.0",

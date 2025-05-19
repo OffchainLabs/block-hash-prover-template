@@ -7,5 +7,11 @@ export default defineConfig({
       project: '.',
     }),
   ],
+  contracts: [
+    {
+      name: 'IRollupCore',
+      abi: require('@arbitrum/nitro-contracts/build/contracts/src/rollup/IRollupCore.sol/IRollupCore.json').abi
+    }
+  ],
   out: 'wagmi/abi.ts',
 })
