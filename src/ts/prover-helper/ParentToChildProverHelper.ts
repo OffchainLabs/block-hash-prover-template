@@ -1,4 +1,4 @@
-import { Address, encodeAbiParameters, getContract, GetContractReturnType, Hash, Hex, PublicClient } from 'viem'
+import { Address, encodeAbiParameters, getContract, GetContractReturnType, Hash, Hex, hexToBigInt, keccak256, PublicClient } from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
 import { iOutboxAbi, parentToChildProverAbi, iRollupCoreAbi } from '../../../wagmi/abi'
@@ -24,10 +24,41 @@ export class ParentToChildProverHelper
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
+    const { targetBlockHash, sendRoot } = await this._findLatestAvailableTargetChainBlock(
+      (await this.homeChainClient.getBlock({ blockHash: homeBlockHash })).number
+    )
+
+    const slot = hexToBigInt(
+      keccak256(
+        encodeAbiParameters(
+          [{ type: 'bytes32' }, { type: 'uint256' }],
+          [sendRoot, await this._proverContract().read.rootsSlot()]
+        )
+      )
+    )
+
+    const rlpBlockHeader = await this._getRlpBlockHeader('home', homeBlockHash)
+    const { rlpAccountProof, rlpStorageProof } =
+      await this._getRlpStorageAndAccountProof(
+        'home',
+        homeBlockHash,
+        await this._proverContract().read.outbox(),
+        slot
+      )
+
+      const input = encodeAbiParameters(
+        [
+          { type: 'bytes' }, // block header
+          { type: 'bytes32' }, // send root
+          { type: 'bytes' }, // account proof
+          { type: 'bytes' }, // storage proof
+        ],
+        [rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof]
+      )
+    
     return {
-      input: '0x',
-      targetBlockHash:
-        '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde',
+      input,
+      targetBlockHash
     }
   }
 

@@ -14,13 +14,24 @@ contract ParentToChildProver is BaseProver, IBlockHashProver {
         rootsSlot = _rootsSlot;
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @notice Verify a target chain block hash given a home chain block hash and a proof.
+    /// @param  homeBlockHash The block hash of the home chain.
+    /// @param  input ABI encoded (bytes blockHeader, bytes32 sendRoot, bytes accountProof, bytes storageProof)
     function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
     {
-        return 0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde;
+        // decode the input
+        (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (bytes, bytes32, bytes, bytes));
+
+        // calculate the slot based on the provided send root
+        uint256 slot = uint256(keccak256(abi.encode(sendRoot, rootsSlot)));
+
+        // verify proofs and get the block hash
+        targetBlockHash =
+            _getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
