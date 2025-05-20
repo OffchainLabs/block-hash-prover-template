@@ -126,7 +126,7 @@ export class ParentToChildProverHelper
           assertionHash: latestConfirmedAssertionHash,
         },
         {
-          fromBlock: 1n, // todo: write a utility function to split into chunks. not all RPC's can handle big block ranges
+          fromBlock: 1n,
           toBlock: homeBlockNumber,
         }
       )
