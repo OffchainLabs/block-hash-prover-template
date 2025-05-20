@@ -3,9 +3,13 @@ pragma solidity ^0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IBlockHashProverPointer} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProverPointer.sol";
+import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
 
 /// @notice Reference implementation of a BHPPointer
 contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
+    /// @notice Thrown when the version of the new prover is less than or equal to the current one.
+    error NonIncreasingVersion(uint256 previousVersion, uint256 newVersion);
+
     /// @dev The slot where the code hash is stored.
     uint256 public constant BLOCK_HASH_PROVER_POINTER_SLOT = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
@@ -16,6 +20,13 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
 
     /// @notice Privileged function to update the BHP.
     function setBHP(address bhp) external onlyOwner {
+        if (implementationAddress != address(0)) {
+            uint256 oldVersion = IBlockHashProver(implementationAddress).version();
+            uint256 newVersion = IBlockHashProver(bhp).version();
+            if (newVersion <= oldVersion) {
+                revert NonIncreasingVersion(oldVersion, newVersion);
+            }
+        }
         implementationAddress = bhp;
         _storeCodeHash(bhp.codehash);
     }
