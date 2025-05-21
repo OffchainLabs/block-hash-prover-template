@@ -29,20 +29,14 @@ type TestContext = {
 
 describe('Basic Prover Tests', () => {
   describe('ChildToParentProver', () => {
-    const testContext = {
-      // replace this with the block number of the home chain fork test block
-      forkBlockNumber: 0x13f7f27cn,
-      // replace this with the most recent target block hash available in the target chain's state
-      // this is used to test the prover's ability to prove a block
+    const testContext = {forkBlockNumber: 154627620n,
       expectedTargetBlockHash:
-        '0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d',
-      // replace this with a known storage slot value at the specified target chain block hash
-      // for example a token account balance
+        '0x9aa793347b6915ff7869da6d155e9d3d7365ee5f3d34671f71bee6491730bec9',
       knownStorageSlotAccount:
-        '0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640',
-      knownStorageSlot: 0n,
+        '0x38f918D0E9F1b721EDaA41302E399fa1B79333a9',
+      knownStorageSlot: 10n,
       knownStorageSlotValue:
-        '0x00010002d302d3008c0302be0000000000004b2dd1daa19c71b7debef45c53df',
+        '0x000000000000000000000000000000000000000000000000000000000927c06d',
     } as unknown as TestContext
 
     before(async () => {
@@ -65,20 +59,19 @@ describe('Basic Prover Tests', () => {
   })
 
   describe('ParentToChildProver', () => {
+    // constructor arguments for the Arbitrum Sepolia prover
+    const OUTBOX = '0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F'
+    const ROOTS_SLOT = 3n
+
     const testContext = {
-      // replace this with the block number of the home chain fork test block
-      forkBlockNumber: 0x1568a70n,
-      // replace this with the most recent target block hash available in the target chain's state
-      // this is used to test the prover's ability to prove a block
+      forkBlockNumber: 8361791n,
       expectedTargetBlockHash:
-        '0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580',
-      // replace this with a known storage slot value at the specified target chain block hash
-      // for example a token account balance
+        '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde',
       knownStorageSlotAccount:
-        '0xC6962004f452bE9203591991D15f6b388e09E8D0',
-      knownStorageSlot: 0n,
+        '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071',
+      knownStorageSlot: 50n,
       knownStorageSlotValue:
-        '0x0001002328232812fefcf792000000000000000000032a96d8f8d5f811f7608f',
+        '0x000000000000000000000000000000000000000000000000000000007f43ba00',
     } as unknown as TestContext
 
     before(async () => {
@@ -88,7 +81,10 @@ describe('Basic Prover Tests', () => {
         testContext.forkBlockNumber
       )
 
-      testContext.proverContract = await hre.viem.deployContract('ParentToChildProver') as any
+      testContext.proverContract = await hre.viem.deployContract('ParentToChildProver', [
+      OUTBOX,
+      ROOTS_SLOT,
+    ]) as any
 
       testContext.proverHelper = new ParentToChildProverHelper(
         testContext.proverContract.address,
