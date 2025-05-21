@@ -7,12 +7,10 @@ import {
   http,
   PublicClient,
 } from 'viem'
-import { IProverHelper } from '../src/ts/prover-helper/IProverHelper'
+import { ChildToParentProverHelper, IProverHelper, ParentToChildProverHelper } from '../src/ts/'
 import { expect } from 'chai'
 import { IBlockHashProver$Type } from '../artifacts/broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol/IBlockHashProver'
 import { reset } from '@nomicfoundation/hardhat-toolbox-viem/network-helpers'
-import { ChildToParentProverHelper } from '../src/ts/prover-helper/ChildToParentProverHelper'
-import { ParentToChildProverHelper } from '../src/ts/prover-helper/ParentToChildProverHelper'
 
 type TestContext = {
   proverContract: GetContractReturnType<

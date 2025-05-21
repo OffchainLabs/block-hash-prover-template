@@ -1,3 +1,3 @@
-export { ChildToParentProverHelper } from './prover-helper/ChildToParentProverHelper'
-export { ParentToChildProverHelper } from './prover-helper/ParentToChildProverHelper'
-export { IProverHelper } from './prover-helper/IProverHelper'
+export { ChildToParentProverHelper } from './ChildToParentProverHelper'
+export { ParentToChildProverHelper } from './ParentToChildProverHelper'
+export { IProverHelper } from './IProverHelper'
