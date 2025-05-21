@@ -12,7 +12,7 @@ import {
 } from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
-import { childToParentProverAbi, iBufferAbi } from '../../../wagmi/abi'
+import { childToParentProverAbi, iBufferAbi } from '../../wagmi/abi'
 
 export class ChildToParentProverHelper
   extends BaseProverHelper

@@ -15,7 +15,7 @@ import {
   iOutboxAbi,
   parentToChildProverAbi,
   iRollupCoreAbi,
-} from '../../../wagmi/abi'
+} from '../../wagmi/abi'
 
 export class ParentToChildProverHelper
   extends BaseProverHelper
