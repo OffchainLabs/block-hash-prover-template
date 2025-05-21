@@ -7,7 +7,11 @@ import {
   http,
   PublicClient,
 } from 'viem'
-import { ChildToParentProverHelper, IProverHelper, ParentToChildProverHelper } from '../src/ts/'
+import {
+  ChildToParentProverHelper,
+  IProverHelper,
+  ParentToChildProverHelper,
+} from '../src/ts/'
 import { expect } from 'chai'
 import { IBlockHashProver$Type } from '../artifacts/broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol/IBlockHashProver'
 import { reset } from '@nomicfoundation/hardhat-toolbox-viem/network-helpers'
@@ -27,11 +31,11 @@ type TestContext = {
 
 describe('Basic Prover Tests', () => {
   describe('ChildToParentProver', () => {
-    const testContext = {forkBlockNumber: 154627620n,
+    const testContext = {
+      forkBlockNumber: 154627620n,
       expectedTargetBlockHash:
         '0x9aa793347b6915ff7869da6d155e9d3d7365ee5f3d34671f71bee6491730bec9',
-      knownStorageSlotAccount:
-        '0x38f918D0E9F1b721EDaA41302E399fa1B79333a9',
+      knownStorageSlotAccount: '0x38f918D0E9F1b721EDaA41302E399fa1B79333a9',
       knownStorageSlot: 10n,
       knownStorageSlotValue:
         '0x000000000000000000000000000000000000000000000000000000000927c06d',
@@ -44,7 +48,9 @@ describe('Basic Prover Tests', () => {
         testContext.forkBlockNumber
       )
 
-      testContext.proverContract = await hre.viem.deployContract('ChildToParentProver') as any
+      testContext.proverContract = (await hre.viem.deployContract(
+        'ChildToParentProver'
+      )) as any
 
       testContext.proverHelper = new ChildToParentProverHelper(
         testContext.proverContract.address,
@@ -65,8 +71,7 @@ describe('Basic Prover Tests', () => {
       forkBlockNumber: 8361791n,
       expectedTargetBlockHash:
         '0x4c33819fed9e958df96712715a408fc5bd5dd604c163ff393185c9cfdb405bde',
-      knownStorageSlotAccount:
-        '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071',
+      knownStorageSlotAccount: '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071',
       knownStorageSlot: 50n,
       knownStorageSlotValue:
         '0x000000000000000000000000000000000000000000000000000000007f43ba00',
@@ -79,10 +84,10 @@ describe('Basic Prover Tests', () => {
         testContext.forkBlockNumber
       )
 
-      testContext.proverContract = await hre.viem.deployContract('ParentToChildProver', [
-      OUTBOX,
-      ROOTS_SLOT,
-    ]) as any
+      testContext.proverContract = (await hre.viem.deployContract(
+        'ParentToChildProver',
+        [OUTBOX, ROOTS_SLOT]
+      )) as any
 
       testContext.proverHelper = new ParentToChildProverHelper(
         testContext.proverContract.address,
@@ -112,9 +117,7 @@ async function initialSetup(
   }
 }
 
-function runBasicTests(
-  ctx: TestContext
-) {
+function runBasicTests(ctx: TestContext) {
   it('getTargetBlockHash should return the correct block hash', async () => {
     const { input, targetBlockHash } =
       await ctx.proverHelper.buildInputForGetTargetBlockHash()
@@ -152,10 +155,11 @@ function runBasicTests(
       ctx.knownStorageSlotValue,
       "buildInputForVerifyStorageSlot didn't return the expected slot value"
     )
-    const [account, slot, value] = await ctx.proverContract.read.verifyStorageSlot([
-      ctx.expectedTargetBlockHash,
-      input,
-    ])
+    const [account, slot, value] =
+      await ctx.proverContract.read.verifyStorageSlot([
+        ctx.expectedTargetBlockHash,
+        input,
+      ])
     expect(account).to.equal(
       ctx.knownStorageSlotAccount,
       "verifyStorageSlot didn't return the expected account"
