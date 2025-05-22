@@ -1,12 +1,24 @@
 import { Address, Hash, Hex, PublicClient, toHex, toRlp } from 'viem'
 
-export class BaseProverHelper {
+/**
+ * BaseProverHelper is a base class for prover helpers that provides common functionality
+ * for interacting prover contracts.
+ *
+ * It provides methods to get RLP encoded block headers and storage/account proofs.
+ */
+export abstract class BaseProverHelper {
   constructor(
-    public readonly proverAddress: Address,
     readonly homeChainClient: PublicClient,
     readonly targetChainClient: PublicClient
   ) {}
 
+  /**
+   * Retrieves the RLP encoded block header for a given block hash.
+   * @param chain target or home chain
+   * @param blockHash Block hash to retrieve the block header for
+   * @returns The RLP encoded block header
+   * @throws Error if the block is not found
+   */
   protected async _getRlpBlockHeader(
     chain: 'target' | 'home',
     blockHash: Hash
@@ -25,6 +37,15 @@ export class BaseProverHelper {
     return this._convertToRlpBlock(block)
   }
 
+  /**
+   *
+   * @param chain target or home chain
+   * @param blockHash Block hash to generate proofs against
+   * @param account Account to generate a proof for
+   * @param slot Storage slot to generate a proof for
+   * @returns The RLP encoded account proof, storage proof, and the slot value
+   * @throws Error if the block is not found
+   */
   protected async _getRlpStorageAndAccountProof(
     chain: 'target' | 'home',
     blockHash: Hash,
@@ -59,6 +80,12 @@ export class BaseProverHelper {
     }
   }
 
+  /**
+   * Converts an RPC block response to RLP format.
+   * Works up to the Pectra fork.
+   * @param rpcBlock The block response from the RPC
+   * @returns The RLP encoded block
+   */
   protected _convertToRlpBlock(rpcBlock: any): Hex {
     const encodeInt = (hex: string) => {
       const value = BigInt(hex)

@@ -5,6 +5,9 @@ import {BaseProver} from "./BaseProver.sol";
 import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 
+/// @notice Skeleton implementation of a child to parent IBlockHashProver.
+/// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
+///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is BaseProver, IBlockHashProver {
     address public immutable outbox;
     uint256 public immutable rootsSlot;

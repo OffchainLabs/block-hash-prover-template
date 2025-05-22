@@ -5,7 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IBlockHashProverPointer} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProverPointer.sol";
 import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
 
-/// @notice Reference implementation of a BHPPointer
+/// @notice Production ready implementation of the BlockHashProverPointer contract.
 contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
     /// @notice Thrown when the version of the new prover is less than or equal to the current one.
     error NonIncreasingVersion(uint256 previousVersion, uint256 newVersion);

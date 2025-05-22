@@ -5,6 +5,9 @@ import {BaseProver} from "./BaseProver.sol";
 import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 
+/// @notice Skeleton implementation of a child to parent IBlockHashProver.
+/// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
+///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is BaseProver, IBlockHashProver {
     address public constant blockHashBuffer = 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071;
     uint256 public constant blockHashMappingSlot = 51;
