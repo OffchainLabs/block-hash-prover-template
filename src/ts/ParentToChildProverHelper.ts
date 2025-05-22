@@ -21,7 +21,6 @@ export class ParentToChildProverHelper
   extends BaseProverHelper
   implements IProverHelper
 {
-  // return the newest block hash that can be returned by getTargetBlockHash on the prover
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
     targetBlockHash: Hash
