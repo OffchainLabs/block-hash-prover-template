@@ -12,10 +12,7 @@ import {
 } from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
-import {
-  iOutboxAbi,
-  parentToChildProverAbi,
-} from '../../wagmi/abi'
+import { iOutboxAbi, parentToChildProverAbi } from '../../wagmi/abi'
 
 export class ParentToChildProverHelper
   extends BaseProverHelper
@@ -134,27 +131,33 @@ export class ParentToChildProverHelper
     sendRoot: Hash
     targetBlockHash: Hash
   }> {
-    const logBlockRangeSize = overrides?.logBlockRangeSize ?? this.defaultLogBlockRangeSize
-    const maxLogLookback = overrides?.maxLogLookback ?? this.defaultMaxLogLookback
+    const logBlockRangeSize =
+      overrides?.logBlockRangeSize ?? this.defaultLogBlockRangeSize
+    const maxLogLookback =
+      overrides?.maxLogLookback ?? this.defaultMaxLogLookback
 
     if (logBlockRangeSize < 1n || maxLogLookback < 1n) {
-      throw new Error(
-        `logBlockRangeSize and maxLogLookback must be at least 1`
-      )
+      throw new Error(`logBlockRangeSize and maxLogLookback must be at least 1`)
     }
-    
+
     const outboxContract = await this._outboxContract()
 
     let fromBlock = homeBlockNumber - logBlockRangeSize + 1n
-    let latestEvent: GetContractEventsReturnType<
-      typeof iOutboxAbi,
-      'SendRootUpdated'
-    >[0] | null = null
-    while (latestEvent === null && fromBlock > homeBlockNumber - logBlockRangeSize) {
+    let latestEvent:
+      | GetContractEventsReturnType<typeof iOutboxAbi, 'SendRootUpdated'>[0]
+      | null = null
+    while (
+      latestEvent === null &&
+      fromBlock > homeBlockNumber - logBlockRangeSize
+    ) {
       const toBlock = fromBlock + logBlockRangeSize - 1n
-      const events = await outboxContract.getEvents.SendRootUpdated({}, {
-        fromBlock, toBlock
-      })
+      const events = await outboxContract.getEvents.SendRootUpdated(
+        {},
+        {
+          fromBlock,
+          toBlock,
+        }
+      )
 
       if (events.length > 0) {
         latestEvent = events[events.length - 1]
@@ -164,7 +167,9 @@ export class ParentToChildProverHelper
     }
 
     if (!latestEvent) {
-      throw new Error('No SendRootUpdated event found, consider increasing maxLogLookback')
+      throw new Error(
+        'No SendRootUpdated event found, consider increasing maxLogLookback'
+      )
     }
 
     return {
