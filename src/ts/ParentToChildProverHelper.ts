@@ -21,6 +21,10 @@ export class ParentToChildProverHelper
   extends BaseProverHelper
   implements IProverHelper
 {
+  constructor(public readonly proverAddress: Address, homeChainClient: PublicClient, targetChainClient: PublicClient) {
+    super(homeChainClient, targetChainClient)
+  }
+
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
     targetBlockHash: Hash

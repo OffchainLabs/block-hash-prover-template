@@ -89,6 +89,7 @@ describe('Basic Prover Tests', () => {
       )) as any
 
       testContext.proverHelper = new ParentToChildProverHelper(
+        testContext.proverContract.address,
         homeClient,
         targetClient
       )

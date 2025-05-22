@@ -141,17 +141,6 @@ export class ChildToParentProverHelper
     }
   }
 
-  _proverContract(): GetContractReturnType<
-    typeof childToParentProverAbi,
-    PublicClient
-  > {
-    return getContract({
-      address: this.proverAddress,
-      abi: childToParentProverAbi,
-      client: this.homeChainClient,
-    })
-  }
-
   _bufferContract(): GetContractReturnType<typeof iBufferAbi, PublicClient> {
     return getContract({
       address: this.bufferAddress,
