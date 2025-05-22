@@ -2,6 +2,7 @@ import {
   Address,
   encodeAbiParameters,
   getContract,
+  GetContractEventsReturnType,
   GetContractReturnType,
   Hash,
   Hex,
@@ -14,14 +15,21 @@ import { BaseProverHelper } from './BaseProverHelper'
 import {
   iOutboxAbi,
   parentToChildProverAbi,
-  iRollupCoreAbi,
 } from '../../wagmi/abi'
 
 export class ParentToChildProverHelper
   extends BaseProverHelper
   implements IProverHelper
 {
-  constructor(public readonly proverAddress: Address, homeChainClient: PublicClient, targetChainClient: PublicClient) {
+  // todo: document
+  public readonly defaultLogBlockRangeSize = 10_000n
+  public readonly defaultMaxLogLookback = 1_000_000n
+
+  constructor(
+    public readonly proverAddress: Address,
+    homeChainClient: PublicClient,
+    targetChainClient: PublicClient
+  ) {
     super(homeChainClient, targetChainClient)
   }
 
@@ -113,35 +121,55 @@ export class ParentToChildProverHelper
     return { input, slotValue }
   }
 
-  async _findLatestAvailableTargetChainBlock(homeBlockNumber: bigint): Promise<{
+  /**
+   * Find the latest target chain block hash that is available as of the given home block number.
+   * @param homeBlockNumber home chain block number to search up to
+   * @param overrides Optional parameters to control the log query size and maximum lookback
+   * @returns The latest target chain block hash and the corresponding send root
+   */
+  async _findLatestAvailableTargetChainBlock(
+    homeBlockNumber: bigint,
+    overrides?: { logBlockRangeSize?: bigint; maxLogLookback?: bigint }
+  ): Promise<{
     sendRoot: Hash
     targetBlockHash: Hash
   }> {
-    // grab latest confirmed assertion hash from rollup contract
-    const rollupContract = await this._rollupContract()
-    const latestConfirmedAssertionHash =
-      await rollupContract.read.latestConfirmed()
+    const logBlockRangeSize = overrides?.logBlockRangeSize ?? this.defaultLogBlockRangeSize
+    const maxLogLookback = overrides?.maxLogLookback ?? this.defaultMaxLogLookback
 
-    // search for AssertionConfirmed event for that assertion
-    const latestConfirmedAssertionEvent = (
-      await rollupContract.getEvents.AssertionConfirmed(
-        {
-          assertionHash: latestConfirmedAssertionHash,
-        },
-        {
-          fromBlock: 1n, // todo: write a utility function to split into chunks. not all RPC's can handle big block ranges
-          toBlock: homeBlockNumber,
-        }
+    if (logBlockRangeSize < 1n || maxLogLookback < 1n) {
+      throw new Error(
+        `logBlockRangeSize and maxLogLookback must be at least 1`
       )
-    )[0]
+    }
+    
+    const outboxContract = await this._outboxContract()
 
-    if (!latestConfirmedAssertionEvent) {
-      throw new Error('No assertion confirmed event found')
+    let fromBlock = homeBlockNumber - logBlockRangeSize + 1n
+    let latestEvent: GetContractEventsReturnType<
+      typeof iOutboxAbi,
+      'SendRootUpdated'
+    >[0] | null = null
+    while (latestEvent === null && fromBlock > homeBlockNumber - logBlockRangeSize) {
+      const toBlock = fromBlock + logBlockRangeSize - 1n
+      const events = await outboxContract.getEvents.SendRootUpdated({}, {
+        fromBlock, toBlock
+      })
+
+      if (events.length > 0) {
+        latestEvent = events[events.length - 1]
+      }
+
+      fromBlock -= logBlockRangeSize
+    }
+
+    if (!latestEvent) {
+      throw new Error('No SendRootUpdated event found, consider increasing maxLogLookback')
     }
 
     return {
-      sendRoot: latestConfirmedAssertionEvent.args.sendRoot!,
-      targetBlockHash: latestConfirmedAssertionEvent.args.blockHash!,
+      sendRoot: latestEvent.args.outputRoot!,
+      targetBlockHash: latestEvent.args.l2BlockHash!,
     }
   }
 
@@ -162,16 +190,6 @@ export class ParentToChildProverHelper
     return getContract({
       address: await this._proverContract().read.outbox(),
       abi: iOutboxAbi,
-      client: this.homeChainClient,
-    })
-  }
-
-  async _rollupContract(): Promise<
-    GetContractReturnType<typeof iRollupCoreAbi, PublicClient>
-  > {
-    return getContract({
-      address: await (await this._outboxContract()).read.rollup(),
-      abi: iRollupCoreAbi,
       client: this.homeChainClient,
     })
   }

@@ -2,7 +2,7 @@ import { Address, Hash, Hex } from 'viem'
 
 /**
  * IProverHelper defines the interface that IBlockHashProver helper classes must implement.
- * 
+ *
  * Implementations should avoid relying on specialized RPC capabilities such as large log queries.
  */
 export interface IProverHelper {
