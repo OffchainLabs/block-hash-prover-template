@@ -17,13 +17,13 @@ The project includes:
 
 ```
 src/contracts
-├── BaseProver.sol
+├── ProverUtils.sol
 ├── BlockHashProverPointer.sol
 ├── ChildToParentProver.sol
 └── ParentToChildProver.sol
 ```
 
-**`src/contracts/BaseProver.sol:BaseProver`** contains internal helper functions for verifying MPT proofs of storage slots given an RLP block header. Both the `ChildToParentProver` and `ParentToChildProver` contracts inherit the `BaseProver`. Unless your home or target chain uses a non standard block header encoding scheme or a non MPT state trie, this contract likely requires no modification.
+**`src/contracts/ProverUtils.sol:ProverUtils`** contains a helper library for handling MPT proofs and RLP block headers. 
 
 **`src/contracts/ChildToParentProver.sol:ChildToParentProver`** is a skeleton child to parent block hash prover contract whose home is the child chain and target is the parent chain. `verifyTargetBlockHash` and `getTargetBlockHash` must be implemented to fit your chain. `verifyStorageSlot` likely does not require modification if your target chain uses the standard Ethereum block header encoding scheme and MPT state trie. See [`IBlockHashProver`](https://github.com/OffchainLabs/broadcast-erc/blob/main/contracts/standard/interfaces/IBlockHashProver.sol) for details.
 

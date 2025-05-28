@@ -5,7 +5,7 @@ import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_S
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 
 /// @notice Base contract for IBlockHashProver contracts. Contains helpers for verifying block headers and MPT proofs.
-abstract contract BaseProver {
+library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
     /// @dev Given a block hash, RLP encoded block header, account address, storage slot, and the corresponding proofs,
@@ -18,7 +18,7 @@ abstract contract BaseProver {
     /// @param rlpAccountProof The RLP encoded proof for the account.
     /// @param rlpStorageProof The RLP encoded proof for the storage slot.
     /// @return value The value of the storage slot at the given block.
-    function _getSlotFromBlockHeader(
+    function getSlotFromBlockHeader(
         bytes32 blockHash,
         bytes memory rlpBlockHeader,
         address account,
@@ -30,17 +30,17 @@ abstract contract BaseProver {
         require(blockHash == keccak256(rlpBlockHeader), "Block hash does not match");
 
         // extract the state root from the block header
-        bytes32 stateRoot = _extractStateRootFromBlockHeader(rlpBlockHeader);
+        bytes32 stateRoot = extractStateRootFromBlockHeader(rlpBlockHeader);
 
         // verify the account and storage proofs
-        value = _getStorageSlotFromStateRoot(stateRoot, rlpAccountProof, rlpStorageProof, account, slot);
+        value = getStorageSlotFromStateRoot(stateRoot, rlpAccountProof, rlpStorageProof, account, slot);
     }
 
     /// @dev Extracts the state root from the RLP encoded block header.
     ///      Assumes the state root is the fourth item in the block header.
     /// @param rlpBlockHeader The RLP encoded block header.
     /// @return stateRoot The state root of the block.
-    function _extractStateRootFromBlockHeader(bytes memory rlpBlockHeader) internal pure returns (bytes32 stateRoot) {
+    function extractStateRootFromBlockHeader(bytes memory rlpBlockHeader) internal pure returns (bytes32 stateRoot) {
         // extract the state root from the block header
         stateRoot = Lib_RLPReader.toRLPItem(rlpBlockHeader).readList()[3].readBytes32();
     }
@@ -55,7 +55,7 @@ abstract contract BaseProver {
     /// @param account The account to get the storage slot for.
     /// @param slot The storage slot to get.
     /// @return value The value of the storage slot at the given state root.
-    function _getStorageSlotFromStateRoot(
+    function getStorageSlotFromStateRoot(
         bytes32 stateRoot,
         bytes memory rlpAccountProof,
         bytes memory rlpStorageProof,
