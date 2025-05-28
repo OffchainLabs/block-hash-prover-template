@@ -8,7 +8,7 @@ import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 /// @notice Skeleton implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
 ///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
-contract ChildToParentProver is BaseProver, IBlockHashProver {
+contract ChildToParentProver is IBlockHashProver {
     address public constant blockHashBuffer = 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071;
     uint256 public constant blockHashMappingSlot = 51;
 
@@ -28,8 +28,9 @@ contract ChildToParentProver is BaseProver, IBlockHashProver {
         uint256 slot = uint256(keccak256(abi.encode(targetBlockNumber, blockHashMappingSlot)));
 
         // verify proofs and get the block hash
-        targetBlockHash =
-            _getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof);
+        targetBlockHash = ProverUtils.getSlotFromBlockHeader(
+            homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
+        );
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
@@ -58,7 +59,9 @@ contract ChildToParentProver is BaseProver, IBlockHashProver {
             abi.decode(input, (bytes, address, uint256, bytes, bytes));
 
         // verify proofs and get the value
-        value = ProverUtils.getSlotFromBlockHeader(targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof);
+        value = ProverUtils.getSlotFromBlockHeader(
+            targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof
+        );
     }
 
     /// @inheritdoc IBlockHashProver

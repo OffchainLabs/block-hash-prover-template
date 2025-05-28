@@ -8,7 +8,7 @@ import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 /// @notice Skeleton implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
 ///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
-contract ParentToChildProver is BaseProver, IBlockHashProver {
+contract ParentToChildProver is IBlockHashProver {
     address public immutable outbox;
     uint256 public immutable rootsSlot;
 
@@ -34,7 +34,7 @@ contract ParentToChildProver is BaseProver, IBlockHashProver {
 
         // verify proofs and get the block hash
         targetBlockHash =
-            _getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
+            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
@@ -62,7 +62,9 @@ contract ParentToChildProver is BaseProver, IBlockHashProver {
             abi.decode(input, (bytes, address, uint256, bytes, bytes));
 
         // verify proofs and get the value
-        value = ProverUtils.getSlotFromBlockHeader(targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof);
+        value = ProverUtils.getSlotFromBlockHeader(
+            targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof
+        );
     }
 
     /// @inheritdoc IBlockHashProver
