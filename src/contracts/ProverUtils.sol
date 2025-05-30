@@ -8,6 +8,31 @@ import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader
 library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
+    /// @dev Extracts the state root from the RLP encoded block header.
+    ///      Assumes the state root is the fourth item in the block header.
+    /// @param rlpBlockHeader The RLP encoded block header.
+    /// @return stateRoot The state root of the block.
+    function extractStateRootFromBlockHeader(bytes memory rlpBlockHeader) internal pure returns (bytes32 stateRoot) {
+        // extract the state root from the block header
+        stateRoot = Lib_RLPReader.toRLPItem(rlpBlockHeader).readList()[3].readBytes32();
+    }
+
+    /// @dev Extracts the code hash from the RLP encoded account data.
+    ///      Assumes the code hash is the fourth item in the account data.
+    /// @param accountData The RLP encoded account data.
+    /// @return codeHash The code hash of the account.
+    function extractCodeHashFromAccountData(bytes memory accountData) internal pure returns (bytes32 codeHash) {
+        return Lib_RLPReader.toRLPItem(accountData).readList()[3].readBytes32();
+    }
+
+    /// @dev Extracts the storage root from the RLP encoded account data.
+    ///      Assumes the storage root is the third item in the account data.
+    /// @param accountData The RLP encoded account data.
+    /// @return storageRoot The storage root of the account.
+    function extractStorageRootFromAccountData(bytes memory accountData) internal pure returns (bytes32 storageRoot) {
+        return Lib_RLPReader.toRLPItem(accountData).readList()[2].readBytes32();
+    }
+
     /// @dev Given a block hash, RLP encoded block header, account address, storage slot, and the corresponding proofs,
     ///      verifies and returns the value of the storage slot at that block.
     ///      Reverts if the block hash does not match the block header, or if the MPT proofs are invalid.
@@ -36,13 +61,19 @@ library ProverUtils {
         value = getStorageSlotFromStateRoot(stateRoot, rlpAccountProof, rlpStorageProof, account, slot);
     }
 
-    /// @dev Extracts the state root from the RLP encoded block header.
-    ///      Assumes the state root is the fourth item in the block header.
-    /// @param rlpBlockHeader The RLP encoded block header.
-    /// @return stateRoot The state root of the block.
-    function extractStateRootFromBlockHeader(bytes memory rlpBlockHeader) internal pure returns (bytes32 stateRoot) {
-        // extract the state root from the block header
-        stateRoot = Lib_RLPReader.toRLPItem(rlpBlockHeader).readList()[3].readBytes32();
+    /// @dev Given a state root and RLP encoded account proof, verifies the proof and returns the RLP encoded account data.
+    /// @param stateRoot The state root of the block.
+    /// @param rlpAccountProof The RLP encoded proof for the account.
+    /// @param account The account to get the data for.
+    /// @return accountExists A boolean indicating if the account exists.
+    /// @return accountData The RLP encoded account data.
+    function getAccountDataFromStateRoot(bytes32 stateRoot, bytes memory rlpAccountProof, address account)
+        internal
+        pure
+        returns (bool accountExists, bytes memory accountData)
+    {
+        // verify the proof
+        (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
 
     /// @dev Given a state root, RLP encoded account proof, RLP encoded storage proof, account address, and storage slot,
@@ -64,14 +95,12 @@ library ProverUtils {
     ) internal pure returns (bytes32 value) {
         // verify the proof
         (bool accountExists, bytes memory accountValue) =
-            Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
+            getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
 
         require(accountExists, "Account does not exist");
 
-        bytes32 storageRoot = Lib_RLPReader.toRLPItem(accountValue).readList()[2].readBytes32();
-
         (bool slotExists, bytes memory slotValue) =
-            Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, storageRoot);
+            Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));
 
         // decode the slot value
         if (slotExists) value = Lib_RLPReader.readBytes32(slotValue);
