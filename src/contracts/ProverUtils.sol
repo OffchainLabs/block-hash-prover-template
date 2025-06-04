@@ -8,6 +8,8 @@ import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader
 library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
+    uint256 internal constant STATE_ROOT_INDEX = 3; // The index of the state root in the RLP encoded block header.
+
     /// @dev Extracts the state root from the RLP encoded block header.
     ///      Assumes the state root is the fourth item in the block header.
     /// @param rlpBlockHeader The RLP encoded block header.
