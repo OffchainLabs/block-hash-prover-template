@@ -33,7 +33,6 @@ export class ChildToParentProverHelper
   readonly bufferAddress: Address = '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071'
   readonly blockHashMappingSlot: bigint = 51n
 
-  // return the newest block hash that can be returned by getTargetBlockHash on the prover
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
     targetBlockHash: Hash

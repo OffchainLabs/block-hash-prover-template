@@ -44,6 +44,7 @@ export class ParentToChildProverHelper
     }
   }
 
+  // UNIMPLEMENTED: buildInputForVerifyTargetBlockHash
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
