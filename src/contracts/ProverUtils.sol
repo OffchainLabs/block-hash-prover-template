@@ -9,6 +9,8 @@ library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
     uint256 internal constant STATE_ROOT_INDEX = 3; // The index of the state root in the RLP encoded block header.
+    uint256 internal constant CODE_HASH_INDEX = 3; // The index of the code hash in the RLP encoded account data.
+    uint256 internal constant STORAGE_ROOT_INDEX = 2; // The index of the storage root in the RLP encoded account data.
 
     /// @dev Extracts the state root from the RLP encoded block header.
     ///      Assumes the state root is the fourth item in the block header.
@@ -16,7 +18,7 @@ library ProverUtils {
     /// @return stateRoot The state root of the block.
     function extractStateRootFromBlockHeader(bytes memory rlpBlockHeader) internal pure returns (bytes32 stateRoot) {
         // extract the state root from the block header
-        stateRoot = Lib_RLPReader.toRLPItem(rlpBlockHeader).readList()[3].readBytes32();
+        stateRoot = Lib_RLPReader.toRLPItem(rlpBlockHeader).readList()[STATE_ROOT_INDEX].readBytes32();
     }
 
     /// @dev Extracts the code hash from the RLP encoded account data.
@@ -24,7 +26,7 @@ library ProverUtils {
     /// @param accountData The RLP encoded account data.
     /// @return codeHash The code hash of the account.
     function extractCodeHashFromAccountData(bytes memory accountData) internal pure returns (bytes32 codeHash) {
-        return Lib_RLPReader.toRLPItem(accountData).readList()[3].readBytes32();
+        return Lib_RLPReader.toRLPItem(accountData).readList()[CODE_HASH_INDEX].readBytes32();
     }
 
     /// @dev Extracts the storage root from the RLP encoded account data.
@@ -32,7 +34,7 @@ library ProverUtils {
     /// @param accountData The RLP encoded account data.
     /// @return storageRoot The storage root of the account.
     function extractStorageRootFromAccountData(bytes memory accountData) internal pure returns (bytes32 storageRoot) {
-        return Lib_RLPReader.toRLPItem(accountData).readList()[2].readBytes32();
+        return Lib_RLPReader.toRLPItem(accountData).readList()[STORAGE_ROOT_INDEX].readBytes32();
     }
 
     /// @dev Given a block hash, RLP encoded block header, account address, storage slot, and the corresponding proofs,
