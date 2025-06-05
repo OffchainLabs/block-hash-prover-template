@@ -9,7 +9,11 @@ import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 /// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
 ///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is IBlockHashProver {
+    /// @dev Address of the block hash buffer contract
+    ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/.env.example#L12
     address public constant blockHashBuffer = 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071;
+    /// @dev Storage slot the buffer contract uses to store block hashes.
+    ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
     uint256 public constant blockHashMappingSlot = 51;
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
