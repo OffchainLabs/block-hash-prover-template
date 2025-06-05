@@ -33,6 +33,9 @@ export class ChildToParentProverHelper
   readonly bufferAddress: Address = '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071'
   readonly blockHashMappingSlot: bigint = 51n
 
+  /**
+   * @see IProverHelper.buildInputForGetTargetBlockHash
+   */
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
     targetBlockHash: Hash
@@ -47,6 +50,9 @@ export class ChildToParentProverHelper
     }
   }
 
+  /**
+   * @see IProverHelper.buildInputForGetTargetBlockHash
+   */
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
@@ -90,6 +96,9 @@ export class ChildToParentProverHelper
     }
   }
 
+  /**
+   * @see IProverHelper.buildInputForVerifyStorageSlot
+   */
   async buildInputForVerifyStorageSlot(
     targetBlockHash: Hash,
     account: Address,

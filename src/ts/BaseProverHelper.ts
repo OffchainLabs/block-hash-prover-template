@@ -83,6 +83,8 @@ export abstract class BaseProverHelper {
   /**
    * Converts an RPC block response to RLP format.
    * Works up to the Pectra fork.
+   * For reference on the block structure, see:
+   * https://github.com/ethereum/go-ethereum/blob/35dd84ce2999ecf5ca8ace50a4d1a6abc231c370/core/types/block.go#L75-L109
    * @param rpcBlock The block response from the RPC
    * @returns The RLP encoded block
    */

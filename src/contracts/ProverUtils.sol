@@ -8,9 +8,18 @@ import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader
 library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
-    uint256 internal constant STATE_ROOT_INDEX = 3; // The index of the state root in the RLP encoded block header.
-    uint256 internal constant CODE_HASH_INDEX = 3; // The index of the code hash in the RLP encoded account data.
-    uint256 internal constant STORAGE_ROOT_INDEX = 2; // The index of the storage root in the RLP encoded account data.
+    /// @dev The index of the state root in the RLP encoded block header.
+    ///      For reference on the block structure, see:
+    ///      https://github.com/ethereum/go-ethereum/blob/35dd84ce2999ecf5ca8ace50a4d1a6abc231c370/core/types/block.go#L75-L109
+    uint256 internal constant STATE_ROOT_INDEX = 3;
+    /// @dev The index of the code hash in the RLP encoded account data.
+    ///      For reference on the account structure, see:
+    ///      https://github.com/ethereum/go-ethereum/blob/35dd84ce2999ecf5ca8ace50a4d1a6abc231c370/core/types/state_account.go#L31-L36
+    uint256 internal constant CODE_HASH_INDEX = 3;
+    /// @dev The index of the storage root in the RLP encoded account data.
+    ///      For reference on the account structure, see:
+    ///      https://github.com/ethereum/go-ethereum/blob/35dd84ce2999ecf5ca8ace50a4d1a6abc231c370/core/types/state_account.go#L31-L36
+    uint256 internal constant STORAGE_ROOT_INDEX = 2;
 
     /// @dev Extracts the state root from the RLP encoded block header.
     ///      Assumes the state root is the fourth item in the block header.

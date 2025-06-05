@@ -11,6 +11,8 @@ The project includes:
 - Helpers for producing and verifying MPT proofs.
 - Basic tests for the prover contracts and helpers.
 
+`// UNIMPLEMENTED` comments exist where the developer should add code to implement the provers, helpers and tests.
+
 ## Project Structure
 
 ### Contracts
