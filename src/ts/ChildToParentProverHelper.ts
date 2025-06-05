@@ -1,6 +1,18 @@
-import { Address, encodeAbiParameters, Hash, Hex } from 'viem'
+import {
+  Address,
+  BlockTag,
+  encodeAbiParameters,
+  getContract,
+  GetContractReturnType,
+  Hash,
+  Hex,
+  hexToBigInt,
+  keccak256,
+  PublicClient,
+} from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
+import { childToParentProverAbi, iBufferAbi } from '../../wagmi/abi'
 
 /**
  * ChildToParentProverHelper is a class that provides helper methods for interacting
@@ -18,7 +30,9 @@ export class ChildToParentProverHelper
   extends BaseProverHelper
   implements IProverHelper
 {
-  // UNIMPLEMENTED: buildInputForGetTargetBlockHash
+  readonly bufferAddress: Address = '0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071'
+  readonly blockHashMappingSlot: bigint = 51n
+
   /**
    * @see IProverHelper.buildInputForGetTargetBlockHash
    */
@@ -26,24 +40,59 @@ export class ChildToParentProverHelper
     input: Hex
     targetBlockHash: Hash
   }> {
+    const { targetBlockHash, targetBlockNumber } =
+      await this._findLatestAvailableTargetChainBlock(
+        await this.homeChainClient.getBlockNumber()
+      )
     return {
-      input: '0x',
-      targetBlockHash:
-        '0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d',
+      input: encodeAbiParameters([{ type: 'uint256' }], [targetBlockNumber]),
+      targetBlockHash,
     }
   }
 
-  // UNIMPLEMENTED: buildInputForVerifyTargetBlockHash
   /**
-   * @see IProverHelper.buildInputForVerifyTargetBlockHash
+   * @see IProverHelper.buildInputForGetTargetBlockHash
    */
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
+    const homeBlockNumber = (
+      await this.homeChainClient.getBlock({ blockHash: homeBlockHash })
+    ).number
+    const { targetBlockHash, targetBlockNumber } =
+      await this._findLatestAvailableTargetChainBlock(homeBlockNumber)
+
+    const slot = hexToBigInt(
+      keccak256(
+        encodeAbiParameters(
+          [{ type: 'uint256' }, { type: 'uint256' }],
+          [targetBlockNumber, this.blockHashMappingSlot]
+        )
+      )
+    )
+
+    const rlpBlockHeader = await this._getRlpBlockHeader('home', homeBlockHash)
+    const { rlpAccountProof, rlpStorageProof } =
+      await this._getRlpStorageAndAccountProof(
+        'home',
+        homeBlockHash,
+        this.bufferAddress,
+        slot
+      )
+
+    const input = encodeAbiParameters(
+      [
+        { type: 'bytes' }, // block header
+        { type: 'uint256' }, // target block number
+        { type: 'bytes' }, // account proof
+        { type: 'bytes' }, // storage proof
+      ],
+      [rlpBlockHeader, targetBlockNumber, rlpAccountProof, rlpStorageProof]
+    )
+
     return {
-      input: '0x',
-      targetBlockHash:
-        '0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d',
+      input,
+      targetBlockHash,
     }
   }
 
@@ -79,5 +128,32 @@ export class ChildToParentProverHelper
     )
 
     return { input, slotValue }
+  }
+
+  async _findLatestAvailableTargetChainBlock(homeBlockNumber: bigint): Promise<{
+    targetBlockNumber: bigint
+    targetBlockHash: Hash
+  }> {
+    const bufferContract = this._bufferContract()
+    const targetBlockNumber = await bufferContract.read.newestBlockNumber({
+      blockNumber: homeBlockNumber,
+    })
+    const targetBlockHash = await bufferContract.read.parentChainBlockHash(
+      [targetBlockNumber],
+      { blockNumber: homeBlockNumber }
+    )
+
+    return {
+      targetBlockNumber,
+      targetBlockHash,
+    }
+  }
+
+  _bufferContract(): GetContractReturnType<typeof iBufferAbi, PublicClient> {
+    return getContract({
+      address: this.bufferAddress,
+      abi: iBufferAbi,
+      client: this.homeChainClient,
+    })
   }
 }

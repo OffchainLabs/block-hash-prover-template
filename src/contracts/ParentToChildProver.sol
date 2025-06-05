@@ -3,25 +3,53 @@ pragma solidity ^0.8.28;
 
 import {ProverUtils} from "./ProverUtils.sol";
 import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
+import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-/// @notice Skeleton implementation of a child to parent IBlockHashProver.
-/// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
-///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
+/// @notice Arbitrum implementation of a child to parent IBlockHashProver.
+/// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
+///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IBlockHashProver {
-    // UNIMPLEMENTED: verifyTargetBlockHash
-    /// @inheritdoc IBlockHashProver
+    /// @dev Address of the child chain's Outbox contract
+    address public immutable outbox;
+    /// @dev Storage slot the Outbox contract uses to store roots.
+    ///      Should be set to 3 unless the outbox contract has been modified.
+    ///      See https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
+    uint256 public immutable rootsSlot;
+
+    constructor(address _outbox, uint256 _rootsSlot) {
+        outbox = _outbox;
+        rootsSlot = _rootsSlot;
+    }
+
+    /// @notice Verify a target chain block hash given a home chain block hash and a proof.
+    /// @param  homeBlockHash The block hash of the home chain.
+    /// @param  input ABI encoded (bytes blockHeader, bytes32 sendRoot, bytes accountProof, bytes storageProof)
     function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
     {
-        return 0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580;
+        // decode the input
+        (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (bytes, bytes32, bytes, bytes));
+
+        // calculate the slot based on the provided send root
+        // see: https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
+
+        // verify proofs and get the block hash
+        targetBlockHash =
+            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
     }
 
-    // UNIMPLEMENTED: getTargetBlockHash
-    /// @inheritdoc IBlockHashProver
+    /// @notice Get a target chain block hash given a target chain sendRoot
+    /// @param  input ABI encoded (bytes32 sendRoot)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
-        return 0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580;
+        // decode the input
+        bytes32 sendRoot = abi.decode(input, (bytes32));
+        // get the target block hash from the outbox
+        targetBlockHash = IOutbox(outbox).roots(sendRoot);
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

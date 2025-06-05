@@ -22,6 +22,7 @@
   "author": "Henry <11198460+godzillaba@users.noreply.github.com>",
   "license": "MIT",
   "devDependencies": {
+    "@arbitrum/nitro-contracts": "^3.1.0",
     "@eth-optimism/contracts": "^0.6.0",
     "@nomicfoundation/hardhat-ignition": "^0.15.0",
     "@nomicfoundation/hardhat-ignition-viem": "^0.15.0",
@@ -35,6 +36,7 @@
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=18.0.0",
     "@wagmi/cli": "^2.3.1",
+    "block-hash-pusher": "Offchainlabs/block-hash-pusher",
     "broadcast-erc": "Offchainlabs/broadcast-erc",
     "chai": "^4.2.0",
     "dotenv": "^16.5.0",
