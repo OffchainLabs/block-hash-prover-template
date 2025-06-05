@@ -29,6 +29,7 @@ contract ChildToParentProver is IBlockHashProver {
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
         // calculate the slot based on the provided block number
+        // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
         uint256 slot = uint256(keccak256(abi.encode(targetBlockNumber, blockHashMappingSlot)));
 
         // verify proofs and get the block hash
