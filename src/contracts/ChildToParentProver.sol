@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import {ProverUtils} from "./ProverUtils.sol";
 import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 /// @notice Skeleton implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash are not implemented.
@@ -30,7 +31,7 @@ contract ChildToParentProver is IBlockHashProver {
 
         // calculate the slot based on the provided block number
         // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
-        uint256 slot = uint256(keccak256(abi.encode(targetBlockNumber, blockHashMappingSlot)));
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(blockHashMappingSlot), targetBlockNumber));
 
         // verify proofs and get the block hash
         targetBlockHash = ProverUtils.getSlotFromBlockHeader(
