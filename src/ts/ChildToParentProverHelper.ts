@@ -25,11 +25,26 @@ export class ChildToParentProverHelper
 
   /**
    * @see IProverHelper.buildInputForGetTargetBlockHash
+   *
+   * To use the L1BlockHistory fallback, specify overrides.storedTargetBlockHash with the old block hash to be used.
+   * If no overrides are provided, it will use the latest L1 block hash.
    */
-  async buildInputForGetTargetBlockHash(): Promise<{
+  async buildInputForGetTargetBlockHash(overrides?: {
+    storedTargetBlockHash?: Hash
+  }): Promise<{
     input: Hex
     targetBlockHash: Hash
   }> {
+    if (overrides?.storedTargetBlockHash) {
+      return {
+        input: encodeAbiParameters(
+          [{ type: 'bytes32' }],
+          [overrides.storedTargetBlockHash]
+        ),
+        targetBlockHash: overrides.storedTargetBlockHash,
+      }
+    }
+
     return {
       input: '0x',
       targetBlockHash: await this._l1BlockContract().read.hash(),
