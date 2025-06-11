@@ -1,6 +1,7 @@
-import { Address, encodeAbiParameters, Hash, Hex } from 'viem'
+import { Address, encodeAbiParameters, getContract, Hash, Hex } from 'viem'
 import { IProverHelper } from './IProverHelper'
 import { BaseProverHelper } from './BaseProverHelper'
+import { il1BlockAbi } from '../../wagmi/abi'
 
 /**
  * ChildToParentProverHelper is a class that provides helper methods for interacting
@@ -18,7 +19,10 @@ export class ChildToParentProverHelper
   extends BaseProverHelper
   implements IProverHelper
 {
-  // UNIMPLEMENTED: buildInputForGetTargetBlockHash
+  public readonly l1BlockPredeploy: Address =
+    '0x4200000000000000000000000000000000000015'
+  public readonly l1BlockHashSlot: bigint = 2n
+
   /**
    * @see IProverHelper.buildInputForGetTargetBlockHash
    */
@@ -28,22 +32,37 @@ export class ChildToParentProverHelper
   }> {
     return {
       input: '0x',
-      targetBlockHash:
-        '0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d',
+      targetBlockHash: await this._l1BlockContract().read.hash(),
     }
   }
 
-  // UNIMPLEMENTED: buildInputForVerifyTargetBlockHash
   /**
-   * @see IProverHelper.buildInputForVerifyTargetBlockHash
+   * @see IProverHelper.buildInputForGetTargetBlockHash
    */
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
   ): Promise<{ input: Hex; targetBlockHash: Hash }> {
+    const rlpBlockHeader = await this._getRlpBlockHeader('home', homeBlockHash)
+    const { rlpAccountProof, rlpStorageProof, slotValue } =
+      await this._getRlpStorageAndAccountProof(
+        'home',
+        homeBlockHash,
+        this.l1BlockPredeploy,
+        this.l1BlockHashSlot
+      )
+
+    const input = encodeAbiParameters(
+      [
+        { type: 'bytes' }, // block header
+        { type: 'bytes' }, // account proof
+        { type: 'bytes' }, // storage proof
+      ],
+      [rlpBlockHeader, rlpAccountProof, rlpStorageProof]
+    )
+
     return {
-      input: '0x',
-      targetBlockHash:
-        '0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d',
+      input,
+      targetBlockHash: slotValue,
     }
   }
 
@@ -79,5 +98,13 @@ export class ChildToParentProverHelper
     )
 
     return { input, slotValue }
+  }
+
+  _l1BlockContract() {
+    return getContract({
+      address: this.l1BlockPredeploy,
+      abi: il1BlockAbi,
+      client: this.homeChainClient,
+    })
   }
 }

@@ -49,23 +49,13 @@ describe('Basic Prover Tests', () => {
   describe('ChildToParentProver', () => {
     const testContext = {
       proverType: 'ChildToParentProver',
-      // UNIMPLEMENTED: forkBlockNumber
-      // replace this with the block number of the home chain fork test block
-      forkBlockNumber: 0x13f7f27cn,
-      // UNIMPLEMENTED: expectedTargetBlockHash
-      // replace this with the most recent target block hash available in the target chain's state
-      // this is used to test the prover's ability to prove a block
+      forkBlockNumber: 136206737n,
       expectedTargetBlockHash:
-        '0x3bc1a497257a501e84e875bbe3e619bbdde267fc255162329e4b9df2c504386d',
-      // UNIMPLEMENTED: knownStorageSlotAccount
-      // replace this with a known storage slot value at the specified target chain block hash
-      // for example a token account balance
+        '0x32c888bd64a6afdefdc4cd21f8bfababffe5659f97c667412c0d1173b7468cfb',
       knownStorageSlotAccount: '0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640',
-      // UNIMPLEMENTED: knownStorageSlot
       knownStorageSlot: 0n,
-      // UNIMPLEMENTED: knownStorageSlotValue
       knownStorageSlotValue:
-        '0x00010002d302d3008c0302be0000000000004b2dd1daa19c71b7debef45c53df',
+        '0x00010002d302d3010a0304760000000000004cd9b4161c447c909b096dff435f',
     } as unknown as TestContext
 
     before(async () => {
@@ -93,23 +83,13 @@ describe('Basic Prover Tests', () => {
   describe('ParentToChildProver', () => {
     const testContext = {
       proverType: 'ParentToChildProver',
-      // UNIMPLEMENTED: forkBlockNumber
-      // replace this with the block number of the home chain fork test block
-      forkBlockNumber: 0x1568a70n,
-      // UNIMPLEMENTED: expectedTargetBlockHash
-      // replace this with the most recent target block hash available in the target chain's state
-      // this is used to test the prover's ability to prove a block
+      forkBlockNumber: 22546304n,
       expectedTargetBlockHash:
-        '0x3c8f4a1b6599dfa00468e2609bb45f317ba5fa95e7ef198b03b75bebf54dd580',
-      // UNIMPLEMENTED: knownStorageSlotAccount
-      // replace this with a known storage slot value at the specified target chain block hash
-      // for example a token account balance
-      knownStorageSlotAccount: '0xC6962004f452bE9203591991D15f6b388e09E8D0',
-      // UNIMPLEMENTED: knownStorageSlot
+        '0xec98a8261b7f7acc46b468859859ccf1c428d5b08d36c937878adc0b14055302',
+      knownStorageSlotAccount: '0x1fb3cf6e48F1E7B10213E7b6d87D4c073C7Fdb7b',
       knownStorageSlot: 0n,
-      // UNIMPLEMENTED: knownStorageSlotValue
       knownStorageSlotValue:
-        '0x0001002328232812fefcf792000000000000000000032a96d8f8d5f811f7608f',
+        '0x00010007d007d002bc0304550000000000004cb938a915df69c703d09382b73e',
     } as unknown as TestContext
 
     before(async () => {
@@ -122,12 +102,14 @@ describe('Basic Prover Tests', () => {
       targetClient = clients.targetClient
 
       testContext.proverContract = (await hre.viem.deployContract(
-        'ParentToChildProver'
+        'ParentToChildProver',
+        ['0x1c68ECfbf9C8B1E6C0677965b3B9Ecf9A104305b']
       )) as any
 
       testContext.proverHelper = new ParentToChildProverHelper(
         homeClient,
-        targetClient
+        targetClient,
+        testContext.proverContract.address
       )
     })
 
